@@ -9,13 +9,15 @@ class AgregarTareaScreen extends StatefulWidget {
 }
 
 class _AgregarTareaScreenState extends State<AgregarTareaScreen> {
-  // Llave global para identificar y validar el formulario
+  // Llave que permite validar todos los campos del formulario al mismo tiempo
   final _formKey = GlobalKey<FormState>();
 
-  // Controladores para capturar el texto de los campos
+  // Controladores para leer lo que el usuario escribe en los campos de texto
   final _tituloController = TextEditingController();
   final _descripcionController = TextEditingController();
+
   String? _cursoSeleccionado;
+  String _prioridadSeleccionada = 'Media';
 
   final List<String> _cursos = [
     'Desarrollo de Software IV',
@@ -24,20 +26,24 @@ class _AgregarTareaScreenState extends State<AgregarTareaScreen> {
     'Redes y Comunicaciones',
   ];
 
-  void _guardarFormulario() {
-    // Ejecuta las validaciones de los 3 campos
+  final List<String> _prioridades = ['Alta', 'Media', 'Baja'];
+
+  // Valida el formulario y devuelve el objeto Tarea a la pantalla anterior
+  void _guardarTarea() {
     if (_formKey.currentState!.validate()) {
-      final nuevaTarea = Tarea(
+      final tareaCreada = Tarea(
         titulo: _tituloController.text.trim(),
         curso: _cursoSeleccionado!,
         descripcion: _descripcionController.text.trim(),
+        prioridad: _prioridadSeleccionada,
       );
 
-      // Cierra esta pantalla y devuelve la nueva tarea a la pantalla anterior
-      Navigator.pop(context, nuevaTarea);
+      // Cierra esta vista y envía la tarea de regreso
+      Navigator.pop(context, tareaCreada);
     }
   }
 
+  // Libera la memoria de los controladores cuando se cierra esta pantalla
   @override
   void dispose() {
     _tituloController.dispose();
@@ -45,61 +51,60 @@ class _AgregarTareaScreenState extends State<AgregarTareaScreen> {
     super.dispose();
   }
 
+  // Estilo reutilizable para que los 3 campos del formulario se vean uniformes
+  InputDecoration _estiloCampo(String etiqueta, IconData icono) {
+    return InputDecoration(
+      labelText: etiqueta,
+      prefixIcon: Icon(icono),
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nueva Tarea'),
+        title: const Text('Registrar Nueva Tarea'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
-          child: ListView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // CAMPO 1: Título
               TextFormField(
                 controller: _tituloController,
-                decoration: const InputDecoration(
-                  labelText: 'Título de la tarea',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.title),
-                ),
+                decoration: _estiloCampo('Título de la tarea', Icons.edit_note),
                 validator: (valor) {
                   if (valor == null || valor.trim().isEmpty) {
-                    return 'El título es obligatorio';
+                    return 'Por favor escribe un título';
                   }
                   if (valor.trim().length < 3) {
-                    return 'Debe tener al menos 3 caracteres';
+                    return 'El título debe tener al menos 3 letras';
                   }
                   return null;
                 },
               ),
               const SizedBox(height: 16),
 
-              // CAMPO 2: Selección de Curso
+              // CAMPO 2: Curso (Lista desplegable)
               DropdownButtonFormField<String>(
-                decoration: const InputDecoration(
-                  labelText: 'Curso asociado',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.school),
-                ),
-                hint: const Text('Seleccione un curso'),
+                decoration: _estiloCampo('Curso', Icons.school_outlined),
+                hint: const Text('Selecciona una materia'),
                 items: _cursos.map((curso) {
-                  return DropdownMenuItem(
-                    value: curso,
-                    child: Text(curso),
-                  );
+                  return DropdownMenuItem(value: curso, child: Text(curso));
                 }).toList(),
                 onChanged: (valor) {
-                  setState(() {
-                    _cursoSeleccionado = valor;
-                  });
+                  setState(() => _cursoSeleccionado = valor);
                 },
                 validator: (valor) {
-                  if (valor == null || valor.isEmpty) {
-                    return 'Debe seleccionar un curso';
-                  }
+                  if (valor == null) return 'Debes elegir un curso';
                   return null;
                 },
               ),
@@ -109,25 +114,57 @@ class _AgregarTareaScreenState extends State<AgregarTareaScreen> {
               TextFormField(
                 controller: _descripcionController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Descripción o entregable',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.description),
-                ),
+                decoration: _estiloCampo('Descripción breve', Icons.description_outlined),
                 validator: (valor) {
                   if (valor == null || valor.trim().isEmpty) {
-                    return 'Ingrese una breve descripción';
+                    return 'Agrega una descripción de la tarea';
                   }
                   return null;
                 },
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
 
-              // Botón de envío
-              FilledButton.icon(
-                onPressed: _guardarFormulario,
-                icon: const Icon(Icons.save),
-                label: const Text('Guardar Tarea'),
+              // Selector visual de prioridad mediante chips
+              const Text(
+                'Nivel de prioridad:',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: _prioridades.map((nivel) {
+                  final estaSeleccionado = _prioridadSeleccionada == nivel;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: ChoiceChip(
+                      label: Text(nivel),
+                      selected: estaSeleccionado,
+                      onSelected: (_) {
+                        setState(() => _prioridadSeleccionada = nivel);
+                      },
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 28),
+
+              // Botón principal de guardado
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: FilledButton.icon(
+                  onPressed: _guardarTarea,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF1D4ED8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.check),
+                  label: const Text(
+                    'Guardar Tarea',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ),
             ],
           ),
