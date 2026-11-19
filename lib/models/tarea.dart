@@ -1,13 +1,16 @@
+// Modelo que representa la estructura de una tarea en la aplicación
 class Tarea {
-  final String titulo;
-  final String curso;
-  final String descripcion;
+  String titulo;
+  String curso;
+  String descripcion;
+  String prioridad; // Puede ser: 'Alta', 'Media' o 'Baja'
   bool completada;
 
   Tarea({
     required this.titulo,
     required this.curso,
     required this.descripcion,
+    this.prioridad = 'Media',
     this.completada = false,
   });
 }
