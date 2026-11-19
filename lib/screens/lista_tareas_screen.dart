@@ -34,13 +34,17 @@ class _ListaTareasScreenState extends State<ListaTareasScreen> {
       MaterialPageRoute(builder: (context) => const AgregarTareaScreen()),
     );
 
+<<<<<<< HEAD
+=======
+    if (!mounted) return;
+
+>>>>>>> ff69815c75a38bf491fea1309ffd1b0e333d3881
     // Si el usuario guardó datos válidos (no se devolvió con la flecha atrás)
     if (nuevaTarea != null) {
       setState(() {
         _tareas.insert(0, nuevaTarea); // Agrega la tarea al inicio de la lista
       });
 
-      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Agregada: ${nuevaTarea.titulo}'),
