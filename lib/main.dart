@@ -12,7 +12,7 @@ class GestorTareasApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Quita la etiqueta roja de "DEBUG"
+      debugShowCheckedModeBanner: false,
       title: 'Tareas UCR',
       // Tema global: define colores base y estilo de la barra superior
       theme: ThemeData(
